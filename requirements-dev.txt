@@ -1,0 +1,11 @@
+# Unit tests + lint. These run without PyTorch or Hunyuan3D-2 (tests/conftest.py fakes them):
+#   pip install -r requirements-dev.txt && pip install --no-deps -e . && pytest
+# Versions match requirements.txt where they overlap.
+pytest==8.3.4
+ruff==0.12.5   # gradio 5.33 requires >=0.9.3
+ipython==8.30.0
+numpy==1.26.4
+pillow==10.4.0
+trimesh==4.4.7
+gradio==5.33.0
+huggingface-hub==0.30.2   # newer major versions break gradio 5.33

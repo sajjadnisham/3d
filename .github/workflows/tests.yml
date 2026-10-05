@@ -1,0 +1,76 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  GRADIO_ANALYTICS_ENABLED: "False"
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install ruff==0.12.5
+      - run: ruff check .
+
+  unit:
+    # Fast tests: Hunyuan3D-2 and PyTorch are replaced by fakes (tests/conftest.py).
+    name: unit (Python ${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - name: Install assimp (for the real FBX export test)
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq assimp-utils
+      - name: Install
+        run: |
+          pip install -r requirements-dev.txt
+          pip install --no-deps -e .
+      - name: Run unit tests
+        run: pytest -m "not integration"
+
+  integration:
+    # The real pinned requirements.txt with CPU-only PyTorch: imports Hunyuan3D-2 and runs
+    # its mesh post-processing. No GPU and no model weights, so no actual generation.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - name: Install system libraries
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq libgl1 assimp-utils
+      - name: Install PyTorch (CPU)
+        run: pip install torch==2.5.1 torchvision==0.20.1 --index-url https://download.pytorch.org/whl/cpu
+      - name: Install requirements
+        run: pip install -r requirements.txt pytest==8.3.4
+      - name: Check for dependency conflicts
+        run: pip check
+      - name: Run integration tests
+        env:
+          CREATE3D_REQUIRE_INTEGRATION: "1"   # fail, don't skip, if the install is broken
+        run: pytest -m integration

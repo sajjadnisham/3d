@@ -136,6 +136,18 @@ mesh, ref = gen.generate(image="chair.png", settings=GenerationSettings(texture=
 export_mesh(mesh, "chair.glb")
 ```
 
+## Development
+
+```bash
+pip install -r requirements-dev.txt && pip install --no-deps -e .
+pytest            # unit tests: fast, no GPU or models needed (Hunyuan3D-2 is faked)
+ruff check .
+```
+
+`pytest -m integration` runs the real Hunyuan3D-2 code (imports, mesh clean-up) and needs the full
+`requirements.txt`. GitHub Actions runs lint, the unit tests on Python 3.10–3.12 and the integration
+tests on every push and pull request (`.github/workflows/tests.yml`).
+
 ## Tips for good results
 
 - Use one object, centred, on a plain background, viewed from slightly above the front.

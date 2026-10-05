@@ -16,3 +16,14 @@ create3d = "create3d.cli:main"
 
 [tool.setuptools]
 packages = ["create3d"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+markers = ["integration: runs the real Hunyuan3D-2 code (needs the full requirements.txt)"]
+
+[tool.ruff]
+line-length = 120
+# The Colab notebook puts imports after its form fields on purpose; tests/test_repo.py
+# checks that its cells compile instead.
+extend-exclude = ["*.ipynb"]
