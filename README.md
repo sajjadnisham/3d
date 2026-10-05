@@ -77,6 +77,14 @@ docker run --gpus all -v create3d-cache:/cache -v "$PWD":/work create3d \
     image /work/chair.png -o /work/chair.fbx --texture                         # CLI
 ```
 
+**Prebuilt images** are published by GitHub Actions (`.github/workflows/docker.yml`) on every push to `main`:
+
+```bash
+docker pull ghcr.io/sajjadnisham/3d:latest   # shape + texture
+docker pull ghcr.io/sajjadnisham/3d:shape    # shape only, smaller
+docker run --gpus all -p 7860:7860 -v create3d-cache:/cache ghcr.io/sajjadnisham/3d:latest
+```
+
 The `create3d-cache` volume keeps the downloaded model weights (several GB) between runs.
 Files you want to convert go in the folder mounted at `/work`.
 
