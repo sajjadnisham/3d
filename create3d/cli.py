@@ -33,7 +33,7 @@ def _add_common(p: argparse.ArgumentParser) -> None:
                    help="shape model preset (default: mini-turbo; mv-turbo for 'views')")
     g.add_argument("--texture-model", choices=list(TEXTURE_MODELS), default="turbo")
     g.add_argument("--device", default="auto", help="auto | cuda | mps | cpu")
-    g.add_argument("--low-vram", action="store_true", help="offload models to CPU when idle")
+    g.add_argument("--low-vram", action="store_true", help="offload the texture model to CPU when idle")
 
     g = p.add_argument_group("generation")
     g.add_argument("--texture", action="store_true", help="also paint a texture (CUDA only)")

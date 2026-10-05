@@ -10,6 +10,13 @@ It wraps Hunyuan3D-2 in a command-line tool and a browser UI:
 - Optional **texture painting**, automatic background removal, mesh cleanup and face reduction
 - Exports `.glb`, `.obj`, `.ply`, `.stl`, `.fbx`
 
+## Run it in Google Colab (no install)
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sajjadnisham/3d/blob/main/create3d_colab.ipynb)
+
+Open the notebook, pick *Runtime → Change runtime type → T4 GPU*, and run the cells top to bottom:
+install → load model → upload an image (or type a prompt) → generate → preview → download (GLB/OBJ/FBX/STL/PLY).
+
 ## Requirements
 
 | Task | Hardware |
@@ -59,7 +66,7 @@ Useful options (shared by `image`, `text`, `views` and `batch`):
 | `--seed N` | change the seed for a different result |
 | `--max-faces N` | simplify to N faces (default 40000, `0` = off) |
 | `--keep-background` | don't run background removal |
-| `--low-vram` | offload models to CPU between steps |
+| `--low-vram` | offload the texture model to CPU when idle (for GPUs under 16 GB) |
 | `--save-image` | also save the background-removed / generated input image |
 
 Run `create3d --help` or `create3d image --help` for everything.

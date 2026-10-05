@@ -26,8 +26,9 @@ pip install -e "$HY_DIR"
 
 if [[ $WITH_TEXTURE == 1 ]]; then
   echo ">> Building texture extensions (needs CUDA toolkit + matching compiler) ..."
-  (cd "$HY_DIR/hy3dgen/texgen/custom_rasterizer" && python setup.py install)
-  (cd "$HY_DIR/hy3dgen/texgen/differentiable_renderer" && python setup.py install)
+  # --no-build-isolation so the build can see the installed torch/pybind11
+  pip install --no-build-isolation "$HY_DIR/hy3dgen/texgen/custom_rasterizer"
+  pip install --no-build-isolation "$HY_DIR/hy3dgen/texgen/differentiable_renderer"
 fi
 
 echo ">> Installing create3d ..."

@@ -104,10 +104,8 @@ class Generator3D:
                 repo, subfolder=subfolder, use_safetensors=True, device=self.device
             )
             if flashvdm:
-                mc_algo = "mc" if self.device in ("cpu", "mps") else "dmc"
-                self._shape.enable_flashvdm(mc_algo=mc_algo)
-            if self.low_vram and self.device == "cuda":
-                self._shape.enable_model_cpu_offload()
+                # "dmc" would need the extra `diso` package; "mc" works everywhere.
+                self._shape.enable_flashvdm(mc_algo="mc")
         return self._shape
 
     def _paint_pipeline(self):
