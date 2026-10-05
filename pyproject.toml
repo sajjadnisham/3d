@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "create3d"
+version = "0.1.0"
+description = "Create 3D models from images or text with Tencent Hunyuan3D-2"
+readme = "README.md"
+requires-python = ">=3.9"
+# hy3dgen (Hunyuan3D-2) is not on PyPI; scripts/install.sh installs it from GitHub.
+dependencies = ["pillow", "trimesh", "gradio"]
+
+[project.scripts]
+create3d = "create3d.cli:main"
+
+[tool.setuptools]
+packages = ["create3d"]
