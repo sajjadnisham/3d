@@ -25,7 +25,7 @@ install → load model → upload an image (or type a prompt) → generate → p
 | Shape + texture | NVIDIA GPU with ~16 GB VRAM (use `--low-vram` on smaller cards) |
 | Text → 3D | NVIDIA GPU (adds HunyuanDiT) |
 
-Python 3.9+, and PyTorch installed for your platform first ([pytorch.org](https://pytorch.org/get-started/locally/)).
+Python 3.10–3.12, and PyTorch installed for your platform first ([pytorch.org](https://pytorch.org/get-started/locally/)).
 
 For **FBX** export you also need one of:
 - [Blender](https://www.blender.org/) on your `PATH` (or `BLENDER=/path/to/blender`) — preferred, embeds textures
@@ -37,15 +37,19 @@ Install PyTorch for your GPU first (pick your CUDA version at [pytorch.org](http
 then, from the repo root, either:
 
 ```bash
-pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
+pip install torch==2.5.1 torchvision==0.20.1 --index-url https://download.pytorch.org/whl/cu124
 
 # Option A: pip only (shape generation)
 pip install -r requirements.txt
 
-# Option B: install script (clones Hunyuan3D-2 into third_party/)
+# Option B: install script
 ./scripts/install.sh            # shape generation
 ./scripts/install.sh --texture  # also build the texture CUDA extensions
 ```
+
+All packages are pinned to exact versions in `requirements.txt` (both options use it). PyTorch is the
+exception: install the build that matches your GPU/CUDA/OS yourself (2.5.1 is the recommended version), and the
+requirements keep it instead of replacing it.
 
 Texture painting needs two CUDA extensions compiled from the Hunyuan3D-2 source, so for textures
 run `./scripts/install.sh --texture` (it works after Option A too). A virtual environment
