@@ -8,7 +8,7 @@ It wraps Hunyuan3D-2 in a command-line tool and a browser UI:
 - **Multi-view → 3D**: front/left/back/right images of one object
 - **Batch**: turn a whole folder of images into models
 - Optional **texture painting**, automatic background removal, mesh cleanup and face reduction
-- Exports `.glb`, `.obj`, `.ply`, `.stl`
+- Exports `.glb`, `.obj`, `.ply`, `.stl`, `.fbx`
 
 ## Requirements
 
@@ -19,6 +19,10 @@ It wraps Hunyuan3D-2 in a command-line tool and a browser UI:
 | Text → 3D | NVIDIA GPU (adds HunyuanDiT) |
 
 Python 3.9+, and PyTorch installed for your platform first ([pytorch.org](https://pytorch.org/get-started/locally/)).
+
+For **FBX** export you also need one of:
+- [Blender](https://www.blender.org/) on your `PATH` (or `BLENDER=/path/to/blender`) — preferred, embeds textures
+- the assimp command-line tool: `apt install assimp-utils` / `brew install assimp`
 
 ## Install
 
@@ -40,6 +44,7 @@ create3d image chair.png -o out/chair.glb --texture
 create3d text "a cute cartoon robot" --texture -o robot.glb
 create3d views --front f.png --left l.png --back b.png -o toy.glb
 create3d batch ./photos -o ./models --format .obj
+create3d image chair.png --texture -o chair.fbx   # FBX for Unity/Unreal/Maya
 ```
 
 Useful options (shared by `image`, `text`, `views` and `batch`):

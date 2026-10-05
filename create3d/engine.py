@@ -6,6 +6,10 @@ argument validation work without a GPU or the models installed.
 
 from __future__ import annotations
 
+import os
+import shutil
+import subprocess
+import tempfile
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -31,7 +35,7 @@ TEXTURE_MODELS: Dict[str, tuple] = {
 }
 
 MULTIVIEW_KEYS = ("front", "left", "back", "right")
-EXPORT_FORMATS = (".glb", ".obj", ".ply", ".stl")
+EXPORT_FORMATS = (".glb", ".obj", ".ply", ".stl", ".fbx")
 
 
 @dataclass
@@ -232,11 +236,52 @@ class Generator3D:
         return mesh
 
 
+# Blender script: import a GLB and write an FBX with textures embedded.
+_BLENDER_FBX_SCRIPT = """
+import sys, bpy
+src, dst = sys.argv[sys.argv.index("--") + 1:]
+bpy.ops.wm.read_factory_settings(use_empty=True)
+bpy.ops.import_scene.gltf(filepath=src)
+bpy.ops.export_scene.fbx(filepath=dst, path_mode="COPY", embed_textures=True)
+"""
+
+
+def _find_blender() -> Optional[str]:
+    return os.environ.get("BLENDER") or shutil.which("blender")
+
+
+def _export_fbx(mesh, output: Path) -> None:
+    """trimesh can't write FBX, so write a GLB and convert it with Blender or assimp."""
+    blender = _find_blender()
+    assimp = shutil.which("assimp")
+    if not blender and not assimp:
+        raise RuntimeError(
+            "FBX export needs Blender (on PATH or set BLENDER=/path/to/blender) "
+            "or the assimp command-line tool (e.g. `apt install assimp-utils`, `brew install assimp`)."
+        )
+    with tempfile.TemporaryDirectory() as tmp:
+        glb = Path(tmp) / "mesh.glb"
+        mesh.export(str(glb))
+        if blender:
+            script = Path(tmp) / "to_fbx.py"
+            script.write_text(_BLENDER_FBX_SCRIPT)
+            cmd = [blender, "-b", "--factory-startup", "--python", str(script), "--", str(glb), str(output)]
+        else:
+            cmd = [assimp, "export", str(glb), str(output), "-ffbx"]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.returncode != 0 or not output.is_file():
+        tail = (result.stderr or result.stdout).strip()[-800:]
+        raise RuntimeError(f"FBX conversion failed ({Path(cmd[0]).name}):\n{tail}")
+
+
 def export_mesh(mesh, output: Union[str, Path]) -> Path:
     output = Path(output)
     if output.suffix.lower() not in EXPORT_FORMATS:
         raise ValueError(f"Unsupported output format '{output.suffix}'. Use one of {EXPORT_FORMATS}")
     output.parent.mkdir(parents=True, exist_ok=True)
-    mesh.export(str(output))
+    if output.suffix.lower() == ".fbx":
+        _export_fbx(mesh, output.resolve())
+    else:
+        mesh.export(str(output))
     _log(f"Saved {output}")
     return output

@@ -86,7 +86,7 @@ def build_ui(gen: Generator3D):
                     seed = gr.Number(value=1234, precision=0, label="Seed")
                     max_faces = gr.Slider(0, 200000, value=40000, step=1000, label="Max faces (0 = no reduction)")
                     remove_bg = gr.Checkbox(value=True, label="Auto-remove background")
-                    fmt = gr.Dropdown([".glb", ".obj", ".ply", ".stl"], value=".glb", label="Download format")
+                    fmt = gr.Dropdown([".glb", ".obj", ".ply", ".stl", ".fbx"], value=".glb", label="Download format")
                 btn = gr.Button("Generate 3D model", variant="primary")
             with gr.Column(scale=2):
                 viewer = gr.Model3D(label="Preview", height=520, clear_color=[0.92, 0.92, 0.92, 1.0])

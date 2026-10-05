@@ -7,3 +7,4 @@ outputs/
 *.obj
 *.ply
 *.stl
+*.fbx
