@@ -1,0 +1,45 @@
+# Local install for create3d:
+#   1. Install PyTorch for your GPU first (pick your CUDA version at https://pytorch.org/get-started/locally/):
+#        pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
+#   2. From the repo root:
+#        pip install -r requirements.txt
+#   3. Texture painting additionally needs compiled CUDA extensions: run ./scripts/install.sh --texture
+
+torch
+torchvision
+
+# Hunyuan3D-2 (not on PyPI), pinned to a tested commit
+hy3dgen @ git+https://github.com/Tencent-Hunyuan/Hunyuan3D-2.git@f8db63096c8282cb27354314d896feba5ba6ff8a
+
+# Hunyuan3D-2 dependencies
+diffusers
+transformers>=4.48.0
+accelerate
+einops
+omegaconf
+numpy
+opencv-python
+tqdm>=4.66.3
+ninja
+pybind11
+# imported by Hunyuan3D-2 but missing from its own dependency list
+scipy
+scikit-image
+pyyaml
+
+# Mesh processing
+trimesh
+pymeshlab
+pygltflib
+xatlas
+
+# Background removal
+rembg
+onnxruntime
+
+# Web UI
+gradio
+pillow
+
+# create3d itself (provides the `create3d` command)
+-e .

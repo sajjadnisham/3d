@@ -33,13 +33,24 @@ For **FBX** export you also need one of:
 
 ## Install
 
+Install PyTorch for your GPU first (pick your CUDA version at [pytorch.org](https://pytorch.org/get-started/locally/)),
+then, from the repo root, either:
+
 ```bash
-pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124   # pick your CUDA version
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
+
+# Option A: pip only (shape generation)
+pip install -r requirements.txt
+
+# Option B: install script (clones Hunyuan3D-2 into third_party/)
 ./scripts/install.sh            # shape generation
 ./scripts/install.sh --texture  # also build the texture CUDA extensions
 ```
 
-This clones Hunyuan3D-2 into `third_party/` and installs it along with `create3d`.
+Texture painting needs two CUDA extensions compiled from the Hunyuan3D-2 source, so for textures
+run `./scripts/install.sh --texture` (it works after Option A too). A virtual environment
+(`python -m venv .venv && source .venv/bin/activate`) is recommended.
+
 Model weights download from Hugging Face the first time you use them (into `~/.cache/hy3dgen`,
 or wherever `HY3DGEN_MODELS` points).
 
