@@ -1,0 +1,14 @@
+.git
+.venv
+venv
+third_party
+outputs
+**/__pycache__
+*.egg-info
+build
+*.glb
+*.obj
+*.ply
+*.stl
+*.fbx
+*.ipynb

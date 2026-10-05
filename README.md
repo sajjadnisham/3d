@@ -58,6 +58,28 @@ run `./scripts/install.sh --texture` (it works after Option A too). A virtual en
 Model weights download from Hugging Face the first time you use them (into `~/.cache/hy3dgen`,
 or wherever `HY3DGEN_MODELS` points).
 
+## Docker
+
+Needs an NVIDIA GPU, driver 550 or newer, and the
+[NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html).
+The image includes PyTorch, all pinned packages, the compiled texture extensions and FBX export.
+
+```bash
+docker compose up --build            # web UI at http://localhost:7860
+```
+
+Or with plain Docker:
+
+```bash
+docker build -t create3d .                              # add --build-arg WITH_TEXTURE=0 for a smaller, shape-only image
+docker run --gpus all -p 7860:7860 -v create3d-cache:/cache create3d          # web UI
+docker run --gpus all -v create3d-cache:/cache -v "$PWD":/work create3d \
+    image /work/chair.png -o /work/chair.fbx --texture                         # CLI
+```
+
+The `create3d-cache` volume keeps the downloaded model weights (several GB) between runs.
+Files you want to convert go in the folder mounted at `/work`.
+
 ## Command line
 
 ```bash

@@ -1,0 +1,20 @@
+# Web UI with GPU:  docker compose up --build   ->  http://localhost:7860
+services:
+  create3d:
+    build: .
+    image: create3d
+    ports:
+      - "7860:7860"
+    volumes:
+      - create3d-cache:/cache   # model weights (several GB), kept between runs
+      - ./outputs:/work         # files from CLI runs via `docker compose run`
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+volumes:
+  create3d-cache:
