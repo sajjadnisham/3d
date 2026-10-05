@@ -89,6 +89,7 @@ jobs:
       - name: Smoke test (no GPU on the runner)
         run: |
           img=$(echo "${{ steps.meta.outputs.tags }}" | head -n1)
+          docker run --rm --entrypoint pip "$img" show create3d
           docker run --rm "$img" --help
           docker run --rm --entrypoint python "$img" -c "
           import importlib.util as u

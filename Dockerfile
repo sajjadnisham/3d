@@ -40,6 +40,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         assimp-utils \
     && rm -rf /var/lib/apt/lists/*
 
+# Ubuntu 22.04's pip 22.0 ignores the [project] table in pyproject.toml (builds "UNKNOWN-0.0.0"),
+# so upgrade the packaging tools first.
+RUN python -m pip install --upgrade pip==24.3.1 setuptools==75.6.0 wheel==0.45.1
+
 # PyTorch first: PyPI's Linux build of 2.5.1 targets CUDA 12.4, matching the base image.
 RUN pip install torch==2.5.1 torchvision==0.20.1
 
