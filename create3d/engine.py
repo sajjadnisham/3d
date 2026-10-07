@@ -110,6 +110,10 @@ class Generator3D:
             if flashvdm:
                 # "dmc" would need the extra `diso` package; "mc" works everywhere.
                 self._shape.enable_flashvdm(mc_algo="mc")
+                # enable_flashvdm() swaps in a turbo VAE loaded as float16 regardless of the
+                # pipeline's dtype, which crashes the CPU (float32) decode with
+                # "mat1 and mat2 must have the same dtype". Re-apply the dtype to everything.
+                self._shape.to(self.device, dtype)
         return self._shape
 
     def _paint_pipeline(self):

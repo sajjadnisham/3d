@@ -53,6 +53,9 @@ def fake_backend(monkeypatch):
         def enable_flashvdm(self, **kw):
             rec.calls.append(("shape.flashvdm", kw))
 
+        def to(self, device=None, dtype=None):
+            rec.calls.append(("shape.to", device, dtype))
+
         def __call__(self, **kw):
             rec.calls.append(("shape.generate", kw))
             # main body + a tiny floating blob far away

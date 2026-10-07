@@ -41,6 +41,15 @@ def test_dtype_per_device(fake_backend, rgb_image, device, dtype):
     assert fake_backend.last("shape.load")[2]["dtype"] == dtype
 
 
+@pytest.mark.parametrize("device, dtype", [("cpu", "float32"), ("cuda", "float16")])
+def test_turbo_vae_gets_pipeline_dtype_after_flashvdm(fake_backend, rgb_image, device, dtype):
+    # Hunyuan3D-2's enable_flashvdm() reloads the VAE as float16; on CPU that crashed the decode.
+    Generator3D(shape_model="mini-turbo", device=device).generate(image=rgb_image)
+    names = fake_backend.names()
+    assert names.index("shape.to") > names.index("shape.flashvdm")
+    assert fake_backend.last("shape.to") == ("shape.to", device, dtype)
+
+
 def test_settings_reach_the_pipeline(fake_backend, rgb_image):
     s = GenerationSettings(steps=12, guidance_scale=7.5, octree_resolution=384, num_chunks=20000, seed=99)
     Generator3D().generate(image=rgb_image, settings=s)
