@@ -17,11 +17,18 @@ It wraps Hunyuan3D-2 in a command-line tool and a browser UI:
 Open the notebook, pick *Runtime → Change runtime type → T4 GPU*, and run the cells top to bottom:
 install → load model → upload an image (or type a prompt) → generate → preview → download (GLB/OBJ/FBX/STL/PLY).
 
+## Try it on GitHub (no install, no GPU)
+
+Go to **Actions → [Generate a real 3D model](https://github.com/sajjadnisham/3d/actions/workflows/e2e.yml) → Run workflow**,
+paste a public image URL (or leave it blank for the demo image), and download the **create3d-model**
+artifact when it finishes: GLB, OBJ, STL, FBX, a preview render and the background-removed input.
+It runs on a CPU runner, so it makes the shape only (no texture) and takes about 10 minutes.
+
 ## Requirements
 
 | Task | Hardware |
 |---|---|
-| Shape only (`mini-turbo`, default) | NVIDIA GPU with ~6 GB VRAM (Apple MPS / CPU work, but slowly) |
+| Shape only (`mini-turbo`, default) | NVIDIA GPU with ~6 GB VRAM; CPU works too (~10 min on 4 cores, 16 GB RAM) |
 | Shape + texture | NVIDIA GPU with ~16 GB VRAM (use `--low-vram` on smaller cards) |
 | Text → 3D | NVIDIA GPU (adds HunyuanDiT) |
 
