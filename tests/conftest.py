@@ -41,6 +41,7 @@ def fake_backend(monkeypatch):
     torch.cuda = types.SimpleNamespace(is_available=lambda: rec.cuda, empty_cache=lambda: None)
     torch.backends = types.SimpleNamespace(mps=types.SimpleNamespace(is_available=lambda: False))
     torch.manual_seed = lambda seed: ("generator", seed)
+    torch.float16, torch.float32 = "float16", "float32"
 
     # --- hy3dgen ---------------------------------------------------------------
     class ShapePipeline:

@@ -1,0 +1,124 @@
+name: Generate a real 3D model
+
+# End-to-end check with the real Hunyuan3D-2 weights: image -> 3D model on a CPU runner
+# (no GPU, so shape only, no texture). The model files are uploaded as an artifact.
+# Run it by hand from the Actions tab to try your own image.
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_url:
+        description: "Image URL (blank = Hunyuan3D-2 demo image)"
+        required: false
+        default: ""
+      model:
+        description: "Shape model"
+        type: choice
+        options: [mini-turbo, mini, turbo, full]
+        default: mini-turbo
+      octree:
+        description: "Octree resolution (detail)"
+        required: false
+        default: "256"
+  push:
+    branches: [main]
+    paths:
+      - create3d/engine.py
+      - create3d/cli.py
+      - requirements.txt
+      - scripts/check_model.py
+      - .github/workflows/e2e.yml
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  MODEL: ${{ inputs.model || 'mini-turbo' }}
+  OCTREE: ${{ inputs.octree || '256' }}
+  IMAGE_URL: ${{ inputs.image_url }}
+  DEMO_URL: https://raw.githubusercontent.com/Tencent-Hunyuan/Hunyuan3D-2/f8db63096c8282cb27354314d896feba5ba6ff8a/assets/demo.png
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install system libraries
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq libgl1 assimp-utils
+
+      - name: Install create3d (CPU PyTorch + pinned requirements)
+        run: |
+          pip install torch==2.5.1 torchvision==0.20.1 --index-url https://download.pytorch.org/whl/cpu
+          pip install -r requirements.txt matplotlib==3.9.4 numpy==1.26.4
+
+      - name: Cache model weights
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/huggingface/hub
+            ~/.u2net
+          key: hunyuan3d-weights-${{ env.MODEL }}-v1
+
+      - name: Prepare input image
+        run: |
+          mkdir -p out
+          curl -fsSL "${IMAGE_URL:-$DEMO_URL}" -o input_raw
+          # Flatten onto white and save as JPEG, like a normal photo, so background
+          # removal runs too.
+          python - <<'PY'
+          from PIL import Image
+          img = Image.open("input_raw").convert("RGBA")
+          bg = Image.new("RGBA", img.size, "white")
+          Image.alpha_composite(bg, img).convert("RGB").save("input.jpg", quality=95)
+          print("input:", img.size)
+          PY
+
+      - name: Generate 3D model (image -> GLB)
+        run: |
+          SECONDS=0
+          create3d image input.jpg -o out/model.glb --model "$MODEL" --octree "$OCTREE" --save-image
+          echo "generation took ${SECONDS}s on $(nproc) CPU cores (first run includes the weight download)" | tee out/timing.txt
+
+      - name: Export other formats (OBJ, STL, FBX)
+        run: |
+          python - <<'PY'
+          import trimesh
+          from create3d.engine import export_mesh
+          mesh = trimesh.load("out/model.glb", force="mesh")
+          for ext in (".obj", ".stl", ".fbx"):
+              export_mesh(mesh, f"out/model{ext}")
+          PY
+          assimp info out/model.fbx | grep -E "Meshes|Faces|Vertices"
+
+      - name: Check the model and render a preview
+        run: python scripts/check_model.py out/model.glb --preview out/preview.png --min-faces 2000 | tee out/stats.txt
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### Generated 3D model ($MODEL, octree $OCTREE)"
+            echo '```'
+            cat out/stats.txt out/timing.txt 2>/dev/null
+            echo '```'
+            echo "Download **create3d-model** below (GLB, OBJ, STL, FBX, preview.png, input image)."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: create3d-model
+          path: out/
+          if-no-files-found: warn

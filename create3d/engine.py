@@ -96,12 +96,16 @@ class Generator3D:
     # ------------------------------------------------------------------ loaders
     def _shape_pipeline(self):
         if self._shape is None:
+            import torch
             from hy3dgen.shapegen import Hunyuan3DDiTFlowMatchingPipeline
 
             repo, subfolder, _, flashvdm = SHAPE_MODELS[self.shape_model]
+            # Half precision is the GPU default; on CPU it is unsupported or very slow for
+            # many ops, so run in float32 there (the fp16 weights are upcast on load).
+            dtype = torch.float32 if self.device == "cpu" else torch.float16
             _log(f"Loading shape model {repo}/{subfolder} on {self.device} ...")
             self._shape = Hunyuan3DDiTFlowMatchingPipeline.from_pretrained(
-                repo, subfolder=subfolder, use_safetensors=True, device=self.device
+                repo, subfolder=subfolder, use_safetensors=True, device=self.device, dtype=dtype
             )
             if flashvdm:
                 # "dmc" would need the extra `diso` package; "mc" works everywhere.

@@ -35,6 +35,12 @@ def test_presets_load_the_right_weights_and_steps(fake_backend, rgb_image, model
         assert "shape.flashvdm" not in fake_backend.names()
 
 
+@pytest.mark.parametrize("device, dtype", [("cpu", "float32"), ("cuda", "float16"), ("mps", "float16")])
+def test_dtype_per_device(fake_backend, rgb_image, device, dtype):
+    Generator3D(device=device).generate(image=rgb_image)
+    assert fake_backend.last("shape.load")[2]["dtype"] == dtype
+
+
 def test_settings_reach_the_pipeline(fake_backend, rgb_image):
     s = GenerationSettings(steps=12, guidance_scale=7.5, octree_resolution=384, num_chunks=20000, seed=99)
     Generator3D().generate(image=rgb_image, settings=s)
