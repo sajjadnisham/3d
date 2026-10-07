@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       image_url:
-        description: "Image URL (blank = Hunyuan3D-2 demo image)"
+        description: "Image link: direct or a page like ibb.co/... (blank = demo image)"
         required: false
         default: ""
       model:
@@ -27,6 +27,7 @@ on:
       - create3d/cli.py
       - requirements.txt
       - scripts/check_model.py
+      - scripts/fetch_image.py
       - .github/workflows/e2e.yml
 
 concurrency:
@@ -72,18 +73,10 @@ jobs:
           key: hunyuan3d-weights-${{ env.MODEL }}-v1
 
       - name: Prepare input image
+        # Direct image links and image page links (ImgBB, Imgur, ...) both work.
         run: |
           mkdir -p out
-          curl -fsSL "${IMAGE_URL:-$DEMO_URL}" -o input_raw
-          # Flatten onto white and save as JPEG, like a normal photo, so background
-          # removal runs too.
-          python - <<'PY'
-          from PIL import Image
-          img = Image.open("input_raw").convert("RGBA")
-          bg = Image.new("RGBA", img.size, "white")
-          Image.alpha_composite(bg, img).convert("RGB").save("input.jpg", quality=95)
-          print("input:", img.size)
-          PY
+          python scripts/fetch_image.py "${IMAGE_URL:-$DEMO_URL}" input.jpg
 
       - name: Generate 3D model (image -> GLB)
         run: |
@@ -111,9 +104,11 @@ jobs:
           {
             echo "### Generated 3D model ($MODEL, octree $OCTREE)"
             echo '```'
-            cat out/stats.txt out/timing.txt 2>/dev/null
+            cat out/stats.txt out/timing.txt 2>/dev/null || echo "no model was generated: see the first failed step above"
             echo '```'
-            echo "Download **create3d-model** below (GLB, OBJ, STL, FBX, preview.png, input image)."
+            if [ -f out/model.glb ]; then
+              echo "Download **create3d-model** below (GLB, OBJ, STL, FBX, preview.png, input image)."
+            fi
           } >> "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/upload-artifact@v4
